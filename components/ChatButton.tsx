@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface ChatButtonProps {
@@ -9,8 +8,8 @@ const ChatButton: React.FC<ChatButtonProps> = ({ onClick }) => {
     return (
         <button
             onClick={onClick}
-            title="Open AI Chat Assistant"
-            aria-label="Open AI Chat Assistant"
+            title="Open SAPnAI - SAP niche AI"
+            aria-label="Open SAPnAI - SAP niche AI"
             className="fixed bottom-8 right-8 bg-ewa-purple text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center hover:bg-opacity-90 transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ewa-purple focus:ring-opacity-50 z-20 no-print"
         >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">

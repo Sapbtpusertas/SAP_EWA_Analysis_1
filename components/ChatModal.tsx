@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage as ChatMessageType } from '../types';
 import ChatMessage from './ChatMessage';
@@ -40,7 +39,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, history, onSendM
             >
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-ewa-purple text-white rounded-t-lg">
-                    <h3 className="text-lg font-semibold">✨ AI Chat Assistant</h3>
+                    <h3 className="text-lg font-semibold">✨ SAPnAI - SAP niche AI</h3>
                     <button onClick={onClose} className="text-2xl font-light leading-none">&times;</button>
                 </div>
 

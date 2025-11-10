@@ -119,7 +119,7 @@ const App: React.FC = () => {
         setChatSession(newChat);
         setChatHistory([{
             role: 'model',
-            parts: [{ text: "Hello! I am your AI assistant. I have analyzed the EWA report. How can I help you?" }]
+            parts: [{ text: "Hello! I am SAPnAI. I have analyzed the EWA report. How can I assist you?" }]
         }]);
 
       } else {
