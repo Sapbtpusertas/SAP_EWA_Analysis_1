@@ -1,15 +1,19 @@
+
 import { GoogleGenAI } from "@google/genai";
 
-// FIX: Switched from `import.meta.env.VITE_API_KEY` to `process.env.API_KEY` to align with Gemini guidelines
-// and resolve the TypeScript error "Property 'env' does not exist on type 'ImportMeta'".
-// The API key is expected to be available in the environment as API_KEY.
-if (!process.env.API_KEY) {
-  // In a real app, you'd handle this more gracefully, but for this environment,
-  // we assume the key is present. This check helps during local development.
+// FIX: The API key must be obtained from `process.env.API_KEY` as per the coding guidelines, not `import.meta.env.VITE_API_KEY`. The original comments regarding Vite have been updated.
+// The API key is obtained from the environment variable `process.env.API_KEY`.
+// This variable is assumed to be pre-configured and accessible in the execution environment.
+const apiKey = process.env.API_KEY;
+
+if (!apiKey) {
+  // This warning is helpful for developers running the app locally
+  // if they haven't set up their .env file correctly.
+  // FIX: Updated warning message to reflect the use of `API_KEY`.
   console.warn("API_KEY environment variable not set. AI features will fail.");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+const ai = new GoogleGenAI({ apiKey: apiKey! });
 
 export const generateContent = async (prompt: string): Promise<string> => {
   try {

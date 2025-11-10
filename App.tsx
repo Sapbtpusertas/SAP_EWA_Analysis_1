@@ -105,6 +105,7 @@ const App: React.FC = () => {
         setIsAnalyzed(true);
 
         // Initialize Chat Session
+        // FIX: The API key must be obtained from `process.env.API_KEY` as per the coding guidelines.
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
         const systemInstruction = `You are an expert SAP Basis consultant. Your role is to analyze and answer questions about the following SAP EarlyWatch Alert (EWA) report. Provide concise, actionable insights and recommendations. The full HTML content of the report is provided below for your context.\n\n--- REPORT START ---\n${fileContent}\n--- REPORT END ---`;
         const newChat = ai.chats.create({
