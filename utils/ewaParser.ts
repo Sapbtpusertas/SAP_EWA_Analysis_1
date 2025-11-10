@@ -109,8 +109,8 @@ export const parseEwaHtml = (htmlString: string): EwaReportData | null => {
         let totalDumps = 0;
         if(dumpsTable) {
             const rows = parseTable(dumpsTable as HTMLTableElement, true)?.rows || [];
-            totalDumps = rows.reduce((sum, row) => sum + parseInt(row[1], 10), 0);
-            const top5 = rows.sort((a,b) => parseInt(b[1], 10) - parseInt(a[1], 10)).slice(0, 5);
+            totalDumps = rows.reduce((sum, row) => sum + parseInt(row[1] || '0', 10), 0);
+            const top5 = rows.sort((a,b) => parseInt(b[1] || '0', 10) - parseInt(a[1] || '0', 10)).slice(0, 5);
             dumpsChart = {
                  labels: top5.map(r => r[0]),
                  datasets: [{
@@ -190,7 +190,8 @@ export const parseEwaHtml = (htmlString: string): EwaReportData | null => {
         if (dbGrowthTable) {
             const rows = parseTable(dbGrowthTable)?.rows;
             if (rows && rows.length > 0) {
-                currentDbSizeGb = parseFloat(rows[rows.length - 1][1].replace(/,/g, ''));
+                const sizeString = rows[rows.length - 1][1] || '0';
+                currentDbSizeGb = parseFloat(sizeString.replace(/,/g, ''));
             }
         }
 
@@ -202,7 +203,8 @@ export const parseEwaHtml = (htmlString: string): EwaReportData | null => {
             const rows = parseTable(tablespaceTable)?.rows;
             if (rows) {
                 const totalFreeMb = rows.reduce((sum, row) => {
-                    const freeSpace = parseFloat(row[2].replace(/,/g, ''));
+                    const freeSpaceString = row[2] || '0';
+                    const freeSpace = parseFloat(freeSpaceString.replace(/,/g, ''));
                     return isNaN(freeSpace) ? sum : sum + freeSpace;
                 }, 0);
                 totalFreeSpaceGb = totalFreeMb / 1024;
