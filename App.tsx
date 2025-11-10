@@ -12,14 +12,14 @@ import {
   LineElement,
   Filler,
 } from 'chart.js';
-import { Chat } from "@google/genai";
+import { GoogleGenAI, Chat } from "@google/genai";
 import Header from './components/Header';
 import KpiCard from './components/KpiCard';
 import Section from './components/Section';
 import AiModal from './components/AiModal';
 import ChatButton from './components/ChatButton';
 import ChatModal from './components/ChatModal';
-import { generateContent, ai } from './services/geminiService'; // Import the shared ai instance
+import { generateContent } from './services/geminiService';
 import { getPrompt, PROMPTS } from './constants';
 import type { ModalState, EwaReportData, ChatMessage } from './types';
 import { parseEwaHtml } from './utils/ewaParser';
@@ -103,7 +103,14 @@ const App: React.FC = () => {
         setEwaData(data);
         setIsAnalyzed(true);
 
-        // Initialize Chat Session using the shared AI instance
+        // Initialize Chat Session
+        // WARNING: Hardcoding API keys is not recommended for production applications.
+        const apiKey = "AIzaSyB_3W1y8RqPr9Pzw2g46jk865g7aGtrgNU";
+        if (!apiKey) {
+            alert("API Key is not configured. Chat will not work.");
+            return;
+        }
+        const ai = new GoogleGenAI({ apiKey });
         const systemInstruction = `You are an expert SAP Basis consultant. Your role is to analyze and answer questions about the following SAP EarlyWatch Alert (EWA) report. Provide concise, actionable insights and recommendations. The full HTML content of the report is provided below for your context.\n\n--- REPORT START ---\n${fileContent}\n--- REPORT END ---`;
         const newChat = ai.chats.create({
           model: 'gemini-2.5-flash',
