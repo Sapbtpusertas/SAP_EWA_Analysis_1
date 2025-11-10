@@ -1,0 +1,5 @@
+{
+  "name": "SAP EWA Infographic Report",
+  "description": "An interactive, single-page web application that visualizes an SAP EarlyWatch Alert (EWA) report, providing key performance indicators, trend analysis, and AI-powered recommendations to ensure system stability, performance, and security.",
+  "requestFramePermissions": []
+}

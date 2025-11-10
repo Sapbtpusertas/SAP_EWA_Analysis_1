@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAP EWA Infographic Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'ewa-purple': '#7B4FE8',
+              'ewa-blue': '#4F87E8',
+              'ewa-teal': '#4FE8C0',
+              'ewa-yellow': '#E8DB4F',
+              'ewa-orange': '#E88C4F',
+              'ewa-red': '#E53E3E',
+              'ewa-green': '#38A169',
+              'text-dark': '#1F2937',
+              'text-light': '#6B7281',
+              'bg-light': '#F3F4F6',
+              'bg-card': '#FFFFFF',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .no-print {
+          display: none !important;
+        }
+        main {
+          padding: 0 !important;
+          margin: 0 !important;
+          max-width: 100% !important;
+        }
+        section {
+          box-shadow: none !important;
+          border: 1px solid #e5e7eb;
+          page-break-inside: avoid;
+        }
+         header {
+          position: static !important;
+        }
+        .chart-container {
+           page-break-inside: avoid;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "chart.js": "https://aistudiocdn.com/chart.js@^4.5.1",
+    "react-chartjs-2": "https://aistudiocdn.com/react-chartjs-2@^5.3.1"
+  }
+}
+</script>
+</head>
+  <body class="bg-bg-light text-text-dark font-sans">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
