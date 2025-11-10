@@ -84,6 +84,10 @@ export interface EwaReportData {
         summaryText: string;
         checks: { rating: string, check: string; status: string; }[];
     };
+    softwareChangeManagement: {
+        summaryText: string;
+        checks: { rating: string; text: string }[];
+    };
     databasePerformance: {
         summaryText: string;
         waitEventsChart: ChartJsData | null;
@@ -93,6 +97,9 @@ export interface EwaReportData {
         summaryText: string;
         diskUsage: ChartJsData | null;
         checks: { rating: string; check: string; status: string }[];
+    };
+    financialDataQuality: {
+        summaryText: string;
     };
     dvm: {
         summaryText: string;

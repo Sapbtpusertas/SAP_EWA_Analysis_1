@@ -40,6 +40,11 @@ export const PROMPTS = {
     You are an expert SAP Security consultant. An EWA report found several security issues. For the top red-rated issue, explain the business risk in one sentence and provide a critical, step-by-step action plan to remediate it.
     Security Issues:
   `,
+  // FIX: Add missing prompt for SOFTWARE_CHANGE_MANAGEMENT to resolve TypeScript error in App.tsx
+  SOFTWARE_CHANGE_MANAGEMENT: `
+    You are an expert SAP Basis and Change Management consultant. The following checks related to software changes and transports were found. Explain the potential risks associated with the non-green items and recommend best practices to improve the change management process.
+    Change Management Data:
+  `,
   DATABASE_PERFORMANCE: `
     You are an expert SAP Database Administrator. Based on the top database wait events and buffer quality, diagnose the primary database bottleneck. Is the issue related to I/O, memory, or inefficient queries? What should be the primary focus for optimization?
     DB Performance Data:
@@ -47,6 +52,11 @@ export const PROMPTS = {
   DATABASE_ADMIN: `
     You are an expert SAP Database Administrator. A critical administrative issue has been found regarding tablespace utilization. Explain the immediate risk this poses to the system and outline the urgent actions required to prevent a system outage.
     DB Admin Data:
+  `,
+  // FIX: Add missing prompt for FINANCIAL_DATA_QUALITY to resolve TypeScript error in App.tsx
+  FINANCIAL_DATA_QUALITY: `
+    You are an expert SAP FICO consultant. The EWA report provides the following summary regarding Financial Data Quality. Based on this, explain what area of financial data consistency this likely refers to and what the potential impact on business reporting could be.
+    Financial Data Quality Summary:
   `,
   DVM: `
     You are an expert in SAP Data Volume Management (DVM). The EWA report indicates that DVM analysis is not active, but data growth is a concern. Explain the importance of activating DVM and list the first three tables that are typically the best candidates for an archiving project in an ERP system.

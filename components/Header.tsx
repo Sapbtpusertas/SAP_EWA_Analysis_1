@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ onUpload, onAnalyse, onDownload, onRese
     <header className="bg-white shadow-md sticky top-0 z-10 border-b-4 border-ewa-purple">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-ewa-purple">SAP EWA Infographic Report</h1>
+          <h1 className="text-2xl font-bold text-ewa-purple">PRISM: Tech Arch: SAP EWA Analysis</h1>
           <p className="text-sm text-text-light">Interactive Analysis & AI Recommendations</p>
         </div>
         <div className="flex items-center gap-2 no-print">

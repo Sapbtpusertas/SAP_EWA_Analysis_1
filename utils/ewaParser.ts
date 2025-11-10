@@ -37,7 +37,6 @@ export const parseEwaHtml = (htmlString: string): EwaReportData | null => {
 
         const findSectionRoot = (searchText: string) => {
             const heading = allHeadings.find(h => h.textContent?.trim().includes(searchText));
-            // The content is usually in a following <div>
             return heading?.nextElementSibling;
         };
 
@@ -122,6 +121,37 @@ export const parseEwaHtml = (htmlString: string): EwaReportData | null => {
             }
         }
 
+        // --- Topic 10: Security ---
+        const securitySection = findSectionRoot('10 Security');
+        const securityTable = securitySection?.querySelector('p + table') as HTMLTableElement;
+        let securityChecks: { rating: string, check: string; status:string }[] = [];
+        if (securityTable) {
+            const securityRows = Array.from(securityTable.querySelectorAll('tbody tr'));
+            securityChecks = securityRows.map(row => {
+                const cells = row.querySelectorAll('td');
+                const ratingImg = cells[0]?.querySelector('img');
+                const rating = getRatingFromString(ratingImg?.getAttribute('alt'));
+                const check = cells[1]?.textContent?.trim() || '';
+                return { rating, check, status: '' };
+            });
+        }
+
+        // --- Topic 11: Software Change Management ---
+        const swcmSection = findSectionRoot('11 Software Change');
+        const swcmSummary = getSiblingText(swcmSection);
+        const swcmTable = swcmSection?.querySelector('p + table');
+        let swcmChecks: { rating: string; text: string }[] = [];
+        if (swcmTable) {
+            const rows = Array.from(swcmTable.querySelectorAll('tbody tr'));
+            swcmChecks = rows.map(row => {
+                const cells = row.querySelectorAll('td');
+                const ratingImg = cells[0].querySelector('img');
+                const rating = getRatingFromString(ratingImg?.getAttribute('alt'));
+                const text = cells[1].textContent?.trim() || '';
+                return { rating, text };
+            });
+        }
+
         // --- Topic 12: DB Performance ---
         const waitEventsSection = findSectionRoot('12.2 I/O performance reported by Oracle');
         const waitEventsTable = waitEventsSection?.querySelector('table');
@@ -137,7 +167,66 @@ export const parseEwaHtml = (htmlString: string): EwaReportData | null => {
                 }]
              }
         }
-        
+
+        // --- Topic 13: DB Admin & Disk Usage ---
+        const dbAdminSection = findSectionRoot('13 Database Administration');
+        const dbAdminChecksTable = dbAdminSection?.querySelector('p + table') as HTMLTableElement;
+        let dbAdminChecks: { rating: string; check: string; status: string }[] = [];
+        if (dbAdminChecksTable) {
+            const dbAdminRows = Array.from(dbAdminChecksTable.querySelectorAll('tbody tr'));
+            dbAdminChecks = dbAdminRows.map(row => {
+                const cells = row.querySelectorAll('td');
+                const ratingImg = cells[0]?.querySelector('img');
+                const rating = getRatingFromString(ratingImg?.getAttribute('alt'));
+                const check = cells[1]?.textContent?.trim() || '';
+                return { rating, check, status: '' };
+            });
+        }
+
+        const dbGrowthHeading = allHeadings.find(h => h.textContent?.includes('13.3.1 Database Growth'));
+        const dbGrowthContainer = dbGrowthHeading?.parentElement;
+        const dbGrowthTable = dbGrowthContainer?.querySelector('p:last-of-type > table') as HTMLTableElement;
+        let currentDbSizeGb = 0;
+        if (dbGrowthTable) {
+            const rows = parseTable(dbGrowthTable)?.rows;
+            if (rows && rows.length > 0) {
+                currentDbSizeGb = parseFloat(rows[rows.length - 1][1].replace(/,/g, ''));
+            }
+        }
+
+        const tablespaceHeading = allHeadings.find(h => h.textContent?.includes('13.3.2 Tablespace Freespace overview'));
+        const tablespaceContainer = tablespaceHeading?.parentElement;
+        const tablespaceTable = tablespaceContainer?.querySelector('p > table') as HTMLTableElement;
+        let totalFreeSpaceGb = 0;
+        if (tablespaceTable) {
+            const rows = parseTable(tablespaceTable)?.rows;
+            if (rows) {
+                const totalFreeMb = rows.reduce((sum, row) => {
+                    const freeSpace = parseFloat(row[2].replace(/,/g, ''));
+                    return isNaN(freeSpace) ? sum : sum + freeSpace;
+                }, 0);
+                totalFreeSpaceGb = totalFreeMb / 1024;
+            }
+        }
+
+        let diskUsageChartData: ChartJsData | null = null;
+        if (currentDbSizeGb > 0) {
+            const usedSpaceGb = currentDbSizeGb - totalFreeSpaceGb;
+            diskUsageChartData = {
+                labels: [`Used Space (${usedSpaceGb.toFixed(2)} GB)`, `Free Space (${totalFreeSpaceGb.toFixed(2)} GB)`],
+                datasets: [{
+                    label: 'Database Disk Usage',
+                    data: [usedSpaceGb, totalFreeSpaceGb],
+                    backgroundColor: ['#7B4FE8', '#E5E7EB'],
+                    hoverOffset: 4
+                }]
+            };
+        }
+
+        // --- Topic 14: Financial Data Quality ---
+        const fdqSection = findSectionRoot('14 Financial Data Quality');
+        const fdqSummary = fdqSection?.querySelector('table p:nth-of-type(2)')?.textContent?.trim() || '';
+
         // --- Topic 15: DVM ---
         const dvmSection = findSectionRoot('15 Data Volume Management (DVM)');
         const dvmText = dvmSection?.querySelector('p')?.textContent?.trim();
@@ -202,10 +291,14 @@ export const parseEwaHtml = (htmlString: string): EwaReportData | null => {
                 dumpsChart,
             },
             security: {
-                summaryText: getSiblingText(findSectionRoot('10 Security')),
-                checks: parseTable(findSectionRoot('10 Security')?.querySelector('p + table') as HTMLTableElement)?.rows.map(r => ({ rating: getRatingFromString(r[0]), check: r[1], status: ''})) || []
+                summaryText: getSiblingText(securitySection),
+                checks: securityChecks
             },
-             databasePerformance: {
+            softwareChangeManagement: {
+                summaryText: swcmSummary,
+                checks: swcmChecks,
+            },
+            databasePerformance: {
                 summaryText: getSiblingText(findSectionRoot('12 Database Performance')),
                 waitEventsChart,
                 bufferQualityChart: { 
@@ -214,9 +307,12 @@ export const parseEwaHtml = (htmlString: string): EwaReportData | null => {
                 },
             },
             databaseAdmin: {
-                summaryText: getSiblingText(findSectionRoot('13 Database Administration')),
-                diskUsage: null,
-                checks: [],
+                summaryText: getSiblingText(dbAdminSection),
+                diskUsage: diskUsageChartData,
+                checks: dbAdminChecks,
+            },
+             financialDataQuality: {
+                summaryText: fdqSummary,
             },
             dvm: {
                 summaryText: dvmText || "Data Volume Management information not available.",

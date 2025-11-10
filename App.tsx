@@ -47,7 +47,7 @@ ChartJS.defaults.responsive = true;
 
 const UploadPrompt: React.FC<{ onUpload: () => void }> = ({ onUpload }) => (
   <div className="text-center max-w-2xl mx-auto mt-16 p-8 bg-white rounded-lg shadow-lg">
-    <h2 className="text-2xl font-bold text-ewa-purple mb-4">SAP EWA Infographic Analyser</h2>
+    <h2 className="text-2xl font-bold text-ewa-purple mb-4">PRISM: Tech Arch: SAP EWA Analysis</h2>
     <p className="text-text-light mb-6">To begin, please upload your SAP EarlyWatch Alert report in HTML format.</p>
     <button onClick={onUpload} className="bg-ewa-purple text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform hover:scale-105">
       Upload HTML Report
@@ -264,7 +264,7 @@ const App: React.FC = () => {
 
               <Section className="md:col-span-1" title="5. Hardware Capacity: DB Disk">
                  <p className="text-sm mb-4 text-text-light">Database disk usage is a critical metric. Monitoring free space helps prevent outages.</p>
-                 {ewaData.databaseAdmin.diskUsage ? <div className="h-96 chart-container"><DiskUsageChart data={ewaData.databaseAdmin.diskUsage} /></div> : <p className="text-text-light mt-4">Disk usage data not available in this report. This metric is often derived from filesystem checks within the EWA.</p>}
+                 {ewaData.databaseAdmin.diskUsage ? <div className="h-96 chart-container"><DiskUsageChart data={ewaData.databaseAdmin.diskUsage} /></div> : <p className="text-text-light mt-4">Disk usage data not available in this report.</p>}
               </Section>
 
               <Section className="md:col-span-3" title="6. Workload Overview">
@@ -279,12 +279,12 @@ const App: React.FC = () => {
                  <button onClick={() => handleAiRequest("AI Analysis: Performance Overview", 'PERFORMANCE_OVERVIEW', ewaData.performance)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
               </Section>
 
-              <Section className="md:col-span-2" title="7. Response Time Breakdown">
+              <Section className="md:col-span-2" title="7. Performance Overview: Response Time Breakdown">
                 <p className="text-sm mb-4 text-text-light">A breakdown of the average response time helps identify the primary bottlenecks in the system.</p>
                 {ewaData.performance.responseTimeBreakdown ? <div className="h-96 chart-container"><ResponseBreakdownChart data={ewaData.performance.responseTimeBreakdown} /></div> : <p className="text-text-light">Response time breakdown not available.</p>}
               </Section>
 
-              <Section className="md:col-span-3" title="8 & 17. Long-Term Trend Analysis">
+              <Section className="md:col-span-3" title="8. Trend Analysis">
                 <p className="text-sm mb-4 text-text-light">{ewaData.trends.summaryText}</p>
                 {ewaData.trends.chartData ? <div className="h-96 chart-container"><TrendChart data={ewaData.trends.chartData}/></div> : <p>Trend data not available.</p>}
                 <button onClick={() => handleAiRequest("AI Analysis: Trend Analysis", 'TREND_ANALYSIS', ewaData.trends)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
@@ -296,18 +296,18 @@ const App: React.FC = () => {
                 <button onClick={() => handleAiRequest("AI Analysis: ABAP Dumps", 'SYSTEM_OPERATING', ewaData.systemOperating)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
               </Section>
 
-              <Section className="md:col-span-1" title="13. Database Administration">
-                <p className="text-sm mb-4 text-text-light">{ewaData.databaseAdmin.summaryText}</p>
-                 {ewaData.databaseAdmin.checks.length > 0 ? <ul className="space-y-3 mt-4 text-sm">{ewaData.databaseAdmin.checks.map((c, i) => <li key={i} className="flex items-start"><span className="text-xl mr-2 mt-1">{ratingToIcon(c.rating)}</span><div><span className="font-bold">{c.check}:</span> <span className={ratingToColor(c.rating)}>{c.status}</span></div></li>)}</ul> : <p className="text-text-light">No specific admin checks found.</p>}
-                 <button onClick={() => handleAiRequest("AI Analysis: DB Administration", 'DATABASE_ADMIN', ewaData.databaseAdmin)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
-              </Section>
-
-              <Section className="md:col-span-3" title="10. Security">
+               <Section className="md:col-span-1" title="10. Security">
                 <p className="text-sm mb-4 text-text-light">{ewaData.security.summaryText}</p>
-                <ul className="space-y-3 mt-4 text-sm">{ewaData.security.checks.map((c, i) => <li key={i} className="flex items-start"><span className="text-xl mr-2 mt-1">{ratingToIcon(c.rating)}</span><div><span className="font-bold">{c.check}:</span> <span className={ratingToColor(c.rating)}>{c.status}</span></div></li>)}</ul>
+                <ul className="space-y-3 mt-4 text-sm">{ewaData.security.checks.map((c, i) => <li key={i} className="flex items-start"><span className="text-xl mr-2 mt-1">{ratingToIcon(c.rating)}</span><div><span className="font-bold">{c.check}</span></div></li>)}</ul>
                 <button onClick={() => handleAiRequest("AI Analysis: Security", 'SECURITY', ewaData.security)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
               </Section>
-              
+
+              <Section className="md:col-span-3" title="11. Software Change and Transport Management">
+                 <p className="text-sm mb-4 text-text-light">{ewaData.softwareChangeManagement.summaryText}</p>
+                 {ewaData.softwareChangeManagement.checks.length > 0 ? <ul className="space-y-3 mt-4 text-sm">{ewaData.softwareChangeManagement.checks.map((c, i) => <li key={i} className="flex items-start"><span className="text-xl mr-2 mt-1">{ratingToIcon(c.rating)}</span><div><span className="font-bold">{c.text}</span></div></li>)}</ul> : <p className="text-text-light">No specific change management checks found.</p>}
+                 <button onClick={() => handleAiRequest("AI Analysis: Software Change Management", 'SOFTWARE_CHANGE_MANAGEMENT', ewaData.softwareChangeManagement)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
+              </Section>
+
               <Section className="md:col-span-2" title="12. Database Performance: Top Wait Events">
                  <p className="text-sm mb-4 text-text-light">{ewaData.databasePerformance.summaryText}</p>
                  {ewaData.databasePerformance.waitEventsChart ? <div className="h-96 chart-container"><WaitEventsChart data={ewaData.databasePerformance.waitEventsChart} /></div> : <p className="text-text-light">Wait event data not available in a parsable format in this report.</p>}
@@ -318,8 +318,19 @@ const App: React.FC = () => {
                  <p className="text-sm mb-4 text-text-light">Database buffer quality indicates how much data is read from fast memory versus slow disk.</p>
                  {ewaData.databasePerformance.bufferQualityChart ? <div className="h-96 chart-container"><BufferQualityChart data={ewaData.databasePerformance.bufferQualityChart} /></div> : <p className="text-text-light">Buffer quality data not available.</p>}
               </Section>
+              
+              <Section className="md:col-span-3" title="13. Database Administration">
+                <p className="text-sm mb-4 text-text-light">{ewaData.databaseAdmin.summaryText}</p>
+                 {ewaData.databaseAdmin.checks.length > 0 ? <ul className="space-y-3 mt-4 text-sm">{ewaData.databaseAdmin.checks.map((c, i) => <li key={i} className="flex items-start"><span className="text-xl mr-2 mt-1">{ratingToIcon(c.rating)}</span><div><span className="font-bold">{c.check}</span></div></li>)}</ul> : <p className="text-text-light">No specific admin checks found.</p>}
+                 <button onClick={() => handleAiRequest("AI Analysis: DB Administration", 'DATABASE_ADMIN', ewaData.databaseAdmin)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
+              </Section>
 
-               <Section className="md:col-span-3" title="15. Data Volume Management (DVM)">
+              <Section className="md:col-span-3" title="14. Financial Data Quality">
+                 <p className="text-sm mb-4 text-text-light">{ewaData.financialDataQuality.summaryText}</p>
+                 <button onClick={() => handleAiRequest("AI Analysis: Financial Data Quality", 'FINANCIAL_DATA_QUALITY', ewaData.financialDataQuality)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
+              </Section>
+
+              <Section className="md:col-span-3" title="15. Data Volume Management (DVM)">
                 <p className="text-sm mb-4 text-text-light">{ewaData.dvm.summaryText}</p>
                  <button onClick={() => handleAiRequest("AI Analysis: Data Volume Management", 'DVM', ewaData.dvm)} className="ai-btn-small mt-4 no-print">✨ Get AI Recommendation</button>
               </Section>
