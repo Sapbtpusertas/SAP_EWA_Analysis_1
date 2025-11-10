@@ -1,19 +1,9 @@
-
 import { GoogleGenAI } from "@google/genai";
 
-// FIX: The API key must be obtained from `process.env.API_KEY` as per the coding guidelines, not `import.meta.env.VITE_API_KEY`. The original comments regarding Vite have been updated.
+// FIX: Switched to process.env.API_KEY as per the guidelines.
 // The API key is obtained from the environment variable `process.env.API_KEY`.
-// This variable is assumed to be pre-configured and accessible in the execution environment.
-const apiKey = process.env.API_KEY;
-
-if (!apiKey) {
-  // This warning is helpful for developers running the app locally
-  // if they haven't set up their .env file correctly.
-  // FIX: Updated warning message to reflect the use of `API_KEY`.
-  console.warn("API_KEY environment variable not set. AI features will fail.");
-}
-
-const ai = new GoogleGenAI({ apiKey: apiKey! });
+// This variable is assumed to be pre-configured, valid, and accessible.
+export const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
 export const generateContent = async (prompt: string): Promise<string> => {
   try {
@@ -28,6 +18,10 @@ export const generateContent = async (prompt: string): Promise<string> => {
   } catch (error) {
     console.error("Gemini API call failed:", error);
     if (error instanceof Error) {
+      // FIX: Updated error message to refer to the correct environment variable.
+      if (error.message.includes('API key not valid')) {
+        return `**Error:** The API key is not valid. Please ensure the \`API_KEY\` environment variable is set correctly.`;
+      }
       return `**Error:** The AI service failed to respond. Details: ${error.message}`;
     }
     return "**Error:** An unknown error occurred while contacting the AI service.";

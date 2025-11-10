@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef } from 'react';
 import {
   Chart as ChartJS,
@@ -13,14 +12,14 @@ import {
   LineElement,
   Filler,
 } from 'chart.js';
-import { GoogleGenAI, Chat } from "@google/genai";
+import { Chat } from "@google/genai";
 import Header from './components/Header';
 import KpiCard from './components/KpiCard';
 import Section from './components/Section';
 import AiModal from './components/AiModal';
 import ChatButton from './components/ChatButton';
 import ChatModal from './components/ChatModal';
-import { generateContent } from './services/geminiService';
+import { generateContent, ai } from './services/geminiService'; // Import the shared ai instance
 import { getPrompt, PROMPTS } from './constants';
 import type { ModalState, EwaReportData, ChatMessage } from './types';
 import { parseEwaHtml } from './utils/ewaParser';
@@ -104,9 +103,7 @@ const App: React.FC = () => {
         setEwaData(data);
         setIsAnalyzed(true);
 
-        // Initialize Chat Session
-        // FIX: The API key must be obtained from `process.env.API_KEY` as per the coding guidelines.
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+        // Initialize Chat Session using the shared AI instance
         const systemInstruction = `You are an expert SAP Basis consultant. Your role is to analyze and answer questions about the following SAP EarlyWatch Alert (EWA) report. Provide concise, actionable insights and recommendations. The full HTML content of the report is provided below for your context.\n\n--- REPORT START ---\n${fileContent}\n--- REPORT END ---`;
         const newChat = ai.chats.create({
           model: 'gemini-2.5-flash',
