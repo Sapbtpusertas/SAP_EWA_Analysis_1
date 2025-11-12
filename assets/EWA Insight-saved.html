@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP System Health Report - System SEP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #004436;
+            --primary-light: #e6fff4;
+            --secondary-dark: #284038;
+            --secondary-light: #dcf7eb;
+            --background-color: #cee9dd;
+            --error-color: #de3730;
+            --neutral-dark: #393c3a;
+            --neutral-light: #f8faf7;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--neutral-dark);
+        }
+
+        .header-bg {
+            background-color: var(--primary-dark);
+            color: var(--primary-light);
+        }
+
+        .summary-card {
+            background-color: var(--secondary-light);
+            border-left: 4px solid var(--primary-dark);
+        }
+
+        .critical-alert {
+            border-left: 4px solid var(--error-color);
+            background-color: rgba(222, 55, 48, 0.1); /* Light red background */
+        }
+
+        .accordion-header {
+            background-color: var(--primary-dark);
+            color: var(--primary-light);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .accordion-header:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        .accordion-content {
+            background-color: var(--neutral-light);
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+            max-height: 0;
+        }
+
+        .accordion-content.active {
+            max-height: 2000px; /* Arbitrarily large value to allow content to expand */
+        }
+
+        .recommendation-table th {
+            background-color: var(--primary-dark);
+            color: var(--primary-light);
+        }
+
+        .recommendation-table td {
+            background-color: var(--neutral-light);
+        }
+
+        .recommendation-table tr:nth-child(even) td {
+            background-color: var(--secondary-light);
+        }
+
+        .text-primary-dark { color: var(--primary-dark); }
+        .text-primary-light { color: var(--primary-light); }
+        .text-secondary-dark { color: var(--secondary-dark); }
+        .text-secondary-light { color: var(--secondary-light); }
+        .text-error { color: var(--error-color); }
+        .text-neutral-dark { color: var(--neutral-dark); }
+        .text-neutral-light { color: var(--neutral-light); }
+
+        .bg-primary-dark { background-color: var(--primary-dark); }
+        .bg-primary-light { background-color: var(--primary-light); }
+        .bg-secondary-dark { background-color: var(--secondary-dark); }
+        .bg-secondary-light { background-color: var(--secondary-light); }
+        .bg-error { background-color: var(--error-color); }
+        .bg-neutral-dark { background-color: var(--neutral-dark); }
+        .bg-neutral-light { background-color: var(--neutral-light); }
+
+        .border-error { border-color: var(--error-color); }
+        .border-primary-dark { border-color: var(--primary-dark); }
+
+        /* Custom icons for alerts */
+        .icon-critical::before {
+            content: "⚠️";
+            margin-right: 0.5rem;
+        }
+        .icon-warning::before {
+            content: "❗";
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="header-bg shadow-lg p-4 md:p-6">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-3xl md:text-4xl font-extrabold mb-2">SAP System Health Report - System SEP</h1>
+                <p class="text-primary-light text-opacity-80 text-lg md:text-xl">
+                    This report details the critical health state of the SAP S/4HANA 1809 system (SEP), highlighting severe issues across technical domains that require immediate attention.
+                </p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow max-w-4xl mx-auto p-4 md:p-6 space-y-8">
+
+            <!-- Executive Summary -->
+            <section class="bg-secondary-light rounded-lg shadow-md p-6 space-y-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-primary-dark mb-4">Executive Summary</h2>
+                <p class="text-neutral-dark leading-relaxed">
+                    The SAP S/4HANA 1809 system (SEP) is in a critical health state, exhibiting numerous severe issues that demand immediate attention across all technical domains. The core problem lies with significantly outdated software components, including SAP S/4H4ANA 1809, which has passed its mainstream maintenance end date (December 2023), and an underlying SAP HANA 2.0 SPS06 database that is out of security maintenance (December 2023). This foundation exposes the system to severe security vulnerabilities and jeopardizes SAP support.
+                </p>
+                <h3 class="text-xl md:text-2xl font-semibold text-error mb-3">Key Critical Findings:</h3>
+                <ul class="space-y-3">
+                    <li class="summary-card critical-alert p-4 rounded-md shadow-sm flex items-start">
+                        <span class="icon-critical text-error text-xl mr-2"></span>
+                        <p class="text-neutral-dark"><strong class="text-error">Severe SAP HANA Database Issues:</strong> Persistent memory exhaustion (instance, indexserver, and table allocation consistently above 90% of limits), frequent column unloads, critically low disk space on the DATA volume (19% free), and an almost full backup volume (91% used).</p>
+                    </li>
+                    <li class="summary-card critical-alert p-4 rounded-md shadow-sm flex items-start">
+                        <span class="icon-critical text-error text-xl mr-2"></span>
+                        <p class="text-neutral-dark"><strong class="text-error">Log Backup Failures:</strong> A high volume of unsuccessful log backups and significant periods without any backups severely compromise the system's recoverability.</p>
+                    </li>
+                    <li class="summary-card critical-alert p-4 rounded-md shadow-sm flex items-start">
+                        <span class="icon-critical text-error text-xl mr-2"></span>
+                        <p class="text-neutral-dark"><strong class="text-error">System Instability:</strong> A recent critical drop in system availability (to 75%) and a high volume of ABAP short dumps (`TSV_TNEW_PAGE_ALLOC_FAILED`, `TIME_OUT`, `MESSAGE_TYPE_X`) indicate significant operational instability.</p>
+                    </li>
+                    <li class="summary-card critical-alert p-4 rounded-md shadow-sm flex items-start">
+                        <span class="icon-critical text-error text-xl mr-2"></span>
+                        <p class="text-neutral-dark"><strong class="text-error">Major Security Gaps:</strong> SAP HANA auditing is entirely disabled, critical `DATA ADMIN` and `SAP_ALL` privileges are excessively assigned, and the "System Recommendations" tools for both ABAP and HANA are not utilized, preventing proactive security patching.</p>
+                    </li>
+                    <li class="summary-card critical-alert p-4 rounded-md shadow-sm flex items-start">
+                        <span class="icon-critical text-error text-xl mr-2"></span>
+                        <p class="text-neutral-dark"><strong class="text-error">Financial Data Inconsistencies:</strong> 115 critical `FINS_REC` reconciliation errors, predominantly in Company Code KH00, point to underlying financial data integrity issues.</p>
+                    </li>
+                    <li class="summary-card p-4 rounded-md shadow-sm flex items-start">
+                        <span class="icon-warning text-yellow-600 text-xl mr-2"></span>
+                        <p class="text-neutral-dark"><strong class="text-yellow-600">Suboptimal BW Performance:</strong> Average OLAP query times are high, with 0% utilization of the OLAP cache, forcing all queries to repeatedly access the database directly.</p>
+                    </li>
+                    <li class="summary-card p-4 rounded-md shadow-sm flex items-start">
+                        <span class="icon-warning text-yellow-600 text-xl mr-2"></span>
+                        <p class="text-neutral-dark"><strong class="text-yellow-600">Outdated Support Tools:</strong> Critical ST-A/PI and ST-PI add-ons are severely outdated, hindering effective service data collection and potentially impacting overall monitoring.</p>
+                    </li>
+                </ul>
+                <p class="text-neutral-dark leading-relaxed mt-4">
+                    Immediate and comprehensive corrective actions are imperative to restore system stability, secure the landscape, ensure data integrity, and maintain business continuity. An urgent upgrade to a supported S/4HANA and HANA release is the most pressing strategic recommendation.
+                </p>
+            </section>
+
+            <!-- Detailed Findings -->
+            <section class="space-y-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-primary-dark">1. Detailed Findings</h2>
+                <p class="text-neutral-dark leading-relaxed">
+                    This section outlines specific findings identified during the analysis, categorized by system area, along with their implications for system health and performance.
+                </p>
+
+                <!-- Accordion for Detailed Findings -->
+                <div class="accordion-container space-y-2">
+                    <!-- 1.1 System Maintenance and Support -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">1.1 System Maintenance and Support</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>SAP S/4HANA Release Out of Maintenance:</strong> SAP S/4HANA 1809 reached its mainstream maintenance end date on <strong>December 31, 2023</strong>. No extended or priority-one support is offered by SAP for this release, exposing the system to unsupported status and lack of new features or bug fixes.</li>
+                                <li><strong>SAP HANA Database Out of Security Maintenance:</strong> The underlying SAP HANA Database (version 2.00.063.00, deployed 21.08.2022, 39 months old) has surpassed its security maintenance end date (December 2023 for SPS06). This means the system is no longer receiving security patches and is vulnerable to newly discovered exploits.</li>
+                                <li><strong>Operating System Maintenance:</strong> The SUSE Linux Enterprise Server 12 (x86_64) on the DB server (saazs-v-sap33) reaches its standard vendor support end on <strong>October 31, 2024</strong>, with limited LTSS available until October 31, 2027. Windows Server 2016 on the application servers ended standard support on <strong>January 11, 2022</strong>, with extended support until January 11, 2027. Running on older OS versions increases risk and may limit functionality.</li>
+                                <li><strong>Outdated ABAP Support Packages:</strong> Key software components (BI_CONT, S4CORE, SAP_ABA, SAP_BASIS, SAP_GWFND) have Support Packages that are <strong>75-84 months old</strong>, falling outside SAP's 24-month window for high-priority security note availability. This indicates a significant backlog in applying crucial security and functional updates.</li>
+                                <li><strong>Outdated SAP Kernel:</strong> The SAP Kernel Release 777, Patch Level 600, is 28 months old and likely not up to date, potentially missing performance improvements and stability fixes.</li>
+                                <li><strong>Severely Outdated Support Add-ons (ST-A/PI, ST-PI):</strong>
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li>ST-A/PI 01W_731 Support Package 2 is more than two levels lower than the latest available.</li>
+                                        <li>ST-PI 740 Support Package 32 is more than four levels lower than the latest available.</li>
+                                    </ul>
+                                    These outdated add-ons prevent critical applications like Service Data Control Center (SDCC) and RTCCTOOL from effectively connecting to the SAP Support Backbone, hindering proper service data collection and reporting readiness.
+                                </li>
+                                <li><strong>SAP Hotnews Not Implemented:</strong> SAP Hotnews 2734503, concerning potential loss of address data for one-time customers, is not implemented, posing a risk to business processes involving address data.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 1.2 SAP HANA Database Performance and Stability -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">1.2 SAP HANA Database Performance and Stability</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong class="text-error">Critical Memory Consumption (Red Alert):</strong>
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li><strong>Instance Memory Utilization:</strong> The SAP HANA instance memory consistently operates at or above <strong>90% of its global allocation limit</strong> (421 GB used of 484 GB limit, Graphical Data: Page 71). This indicates severe memory pressure, leading to performance degradation and potential instability.</li>
+                                        <li><strong>Table Allocation Exceeds Limit:</strong> Memory usage for database tables exceeds <strong>70% of the global allocation limit</strong>, leaving insufficient memory resources for temporary calculations and query processing (Graphical Data: Page 72). This is a critical indicator of undersizing or inefficient memory management.</li>
+                                        <li><strong>Indexserver Memory Near Limit:</strong> The Indexserver, the primary SAP HANA component, operates very close to its effective allocation limit (424 GB used of 468 GB limit, Graphical Data: Page 73). This causes frequent table unloads and increases the risk of Out-Of-Memory (OOM) dumps.</li>
+                                        <li><strong>High Heap Allocator Consumption:</strong> The `Pool/ColumnStore/Main/Dictionary/RoDict` is identified as the largest heap allocator, consuming <strong>213-236 GB</strong> of memory (Page 73). This points to significant memory usage by column store tables.</li>
+                                        <li><strong>Frequent Column Unloads:</strong> The system experiences frequent column unloads (peaks of <strong>800,000-850,000</strong> on multiple days during the analyzed period, Graphical Data: Page 75). These unloads are often triggered by "Low Memory" conditions, confirming the severe memory pressure.</li>
+                                    </ul>
+                                </li>
+                                <li><strong class="text-error">Critical Disk Space Usage (Red Alert):</strong>
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li><strong>DATA Volume Critically Low:</strong> The DATA disk volume on `saazs-v-sap33` has only <strong>19% free space</strong> (Page 65), approaching the critical 10% threshold. If this space runs out, the database will suspend operations.</li>
+                                        <li><strong>Backup Volume Nearly Full:</strong> The combined `CATALOG_BACKUP+DATA_BACKUP+LOG_BACKUP+TRACE` volume has <strong>91% of its space used</strong> (Page 65), exceeding the recommended limits and risking future backup failures.</li>
+                                        <li><strong>Continuous Database Growth:</strong> The "Used Size" of the HANA database is showing a consistent upward trend, steadily approaching the "Total Size" of allocated data volumes from May to October 2025 (Graphical Data: Page 66). This indicates sustained data growth without proportional increase in available disk capacity.</li>
+                                    </ul>
+                                </li>
+                                <li><strong class="text-error">Severe Log Backup Failures (Red Alert):</strong> On <strong>October 26, 2025 (Sunday), 537 unsuccessful log backups</strong> were recorded, with a maximum single time of <strong>190 minutes without backup</strong> (Page 78). Alerts 38 and 65 for log backup success and duration were also triggered. These failures jeopardize the database's Point-In-Time Recovery capability.</li>
+                                <li><strong>HANA Parameter Configuration Issues:</strong> Nine SAP HANA parameters are not set according to recommendations, and several deviate from default values (e.g., `global.ini` parameters `tcp_backlog`, `impli_enable_reset`, `max_table_count_in_statement` and `backup` related parameters like `backint_response_timeout`, `log_backup_using_backint`). Incorrect parameter settings can negatively impact performance and stability.</li>
+                                <li><strong>Expensive SQL Statements with Cross-Store Access:</strong>
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li><strong>Dominant Preparation Time:</strong> The "Preparation time" consistently represents the dominant component (often >80%) of SAP HANA response time (Graphical Data: Page 75), indicating potential inefficiencies in query parsing, plan generation, or plan cache utilization.</li>
+                                        <li><strong>High-Impact Custom Procedures:</strong> Two custom stored procedures, `ZCL_FCLM_BSEGFLOW_SAMPLE10=>GET_REL_DOCS_Q` and `ZCL_FCLM_MMFLOW_SAMPLE=>BUILD_MMDOC_M`, identified by statement hashes `df5c94b4e8dd5a6d42965efd275d12d4` and `4d5e991121993cd050c0def69f1d0d26` respectively, are top consumers of elapsed time (42,502.7s and 22,889.5s) (Page 81). Both involve cross-store access (accessing both column and row store tables like `BSEG`, `BKPF`, `EBKN`, `CEPC`, and `DUMMY`) which inherently increases CPU and memory consumption. These statements show medium to high correlation with index server CPU spikes.</li>
+                                        <li><strong>High Activity on `SWWCNTP0`:`</strong> Statement `46acafa655c740db1f7db77316e19624` (SELECT ... FROM `SWWCNTP0`) also ranks high in elapsed time (20,195.8s) and CPU contribution (0.03%), indicating intensive reads from the `SWWCNTP0` table (Page 84).</li>
+                                    </ul>
+                                </li>
+                                <li><strong>DB Server CPU Utilization Trend:</strong> While overall CPU utilization on the HANA server appears low, the trend analysis of the Database Server CPU Max. Load shows a gradual but clear increase from below 5% in early 2024 to 20-30% by late 2025 (Graphical Data: Page 140). This indicates growing resource demands on the database server.</li>
+                                <li><strong>High Number of Diagnosis Files:</strong> The trace directory contains a high number of diagnosis files (74 trace files, 798 total files) occupying significant disk space (4.8 GB unlimited total size), which can impair performance and consume valuable disk space.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 1.3 ABAP System Operations -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">1.3 ABAP System Operations</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong class="text-error">Critical System Availability Drop:</strong> System availability dipped significantly to approximately <strong>75% on October 26, 2025</strong>, from a consistent 100% in prior days (Graphical Data: Page 30). This indicates a recent and severe interruption to service.</li>
+                                <li><strong>High Volume of ABAP Dumps:</strong> A total of <strong>58 ABAP dumps</strong> were recorded within one week (October 20-26, 2025) (Page 31). Key dump types include:
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li>`TSV_TNEW_PAGE_ALLOC_FAILED` (12 occurrences): Indicates memory allocation problems, potentially due to high system load or large internal tables.</li>
+                                        <li>`TIME_OUT` (25 occurrences): Suggests long-running programs exceeding their maximum permitted runtime.</li>
+                                        <li>`MESSAGE_TYPE_X` (11 occurrences): Points to unhandled errors or inconsistent system states.</li>
+                                    </ul>
+                                    These dumps indicate significant system instability and potential application issues.
+                                </li>
+                                <li><strong>High GUI Time in Dialog Tasks:</strong> The average response time in dialog tasks is 1,471.5 ms, with <strong>809.3 ms (over 50%) attributed to GUI time</strong> (Page 23). This is a strong indicator of poor network performance or inefficient frontend rendering.</li>
+                                <li><strong>High "Un-Assigned" Workload:</strong> A substantial portion of the total CPU load (<strong>66%</strong>) and DB load (<strong>32%</strong>) is attributed to "Un-Assigned" application modules (Graphical Data: Page 21). This category typically includes custom developments or processes not classified within the SAP Application Hierarchy, suggesting potentially unoptimized or poorly managed custom code.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 1.4 Security -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">1.4 Security</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>SAP HANA System Recommendations Not Used:</strong> The "System Recommendations" application for SAP HANA is not utilized, preventing automated identification and application of critical security notes (Page 33).</li>
+                                <li><strong class="text-error">Excessive `DATA ADMIN` Privilege Assignment:</strong> Three additional users (beyond `SYSTEM` and `_SYS_REPO`) are granted the highly powerful `DATA ADMIN` system privilege, which allows modification and deletion of any object in any schema (Page 34). This poses a significant security risk.</li>
+                                <li><strong class="text-error">Disabled SAP HANA Auditing:</strong> Auditing is completely disabled in the SAP HANA database, and no customer-defined audit policies are enabled (Page 34). This means critical security-relevant actions (e.g., user management, authorization changes, failed login attempts) are not being logged or monitored.</li>
+                                <li><strong>SAP ABAP System Recommendations Not Used:</strong> Similar to HANA, the "System Recommendations" application for the ABAP stack is not used, leaving the system vulnerable to known ABAP-related security issues (Page 34).</li>
+                                <li><strong class="text-error">Critical ABAP Authorizations:</strong>
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li><strong>`SAP_ALL` Profile:</strong> Client 000 has 8 users with `SAP_ALL` (out of 12 valid users), and Client 100 has 12 users with `SAP_ALL` (out of 720 valid users) (Page 35). This is an excessive number of super-user accounts.</li>
+                                        <li><strong>Broad Table Access:</strong> Client 100 has 141 users with authorizations to change or display all tables (via `S_TCODE`=SE16, SE16N, SE17, SM30, SM31 and `S_TABU_DIS`=ACTVT=02/03 with `DICBERCLS`=*) (Page 35). This wide access to sensitive data is a major security vulnerability.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 1.5 BW Performance and Data Quality -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">1.5 BW Performance and Data Quality</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong class="text-yellow-600">Poor OLAP Query Performance (Yellow Alert):</strong> The average OLAP processing time for BW queries is <strong>94.31 seconds</strong>, significantly exceeding the reference value of 60 seconds (Page 40). This indicates general performance problems in BW reporting.</li>
+                                <li><strong class="text-error">Ineffective OLAP Cache Utilization:</strong> All (100%) of the executed BW queries accessed the database directly, with <strong>0% utilization of the OLAP cache</strong> (Graphical Data: Page 56). This results in redundant database accesses and severely impacts query response times.
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li>A significant number of defined queries (<strong>389 out of 578</strong>) have caching explicitly inactive (Mode 0) (Page 55).</li>
+                                        <li>The "Global Cache Size" is set to 192 MB, which is significantly lower than the recommended 90% of the Export/Import SHM buffer (4096 KB = ~4 GB, so 3.6 GB recommended) (Page 56).</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Unbuffered BW InfoObjects:</strong> Several top InfoObjects (e.g., `/ERP/COORDER`, `/ERP/DOC_NO`, `/ERP/ACCAS`) have high number range levels (1.2M - 1.3M rows) but are currently unbuffered (Page 44). This can lead to performance bottlenecks during data loading processes for these objects.</li>
+                                <li><strong>Missing DTP Error DTP:</strong> One Data Transfer Process (DTP) uses error handling options 3 or 4 but is missing a corresponding error DTP (Page 44). This can lead to unmanaged data inconsistencies or data loss during data loads.</li>
+                                <li><strong>Lack of BW Statistics Uploads:</strong> The technical content for BW statistical data (e.g., `0TCT_C01`, `0TCT_C02`, `0TCT_C03`) shows a "Last Upload" date of `00.00.0000` for multiple InfoProviders (Page 47). This indicates that BW statistics are not being regularly collected and uploaded, hindering proper performance analysis and optimization.</li>
+                                <li><strong>Suboptimal Data Transfer Customizing:</strong> The source system `SEPCLNT100` uses default/zero values for critical data transfer parameters (`MAXSIZE`, `STATFRQU`, `MAXPROCS`) (Page 59). This can lead to inefficient data package sizes, excessive IDoc processing overhead, and bottlenecks during data extraction.</li>
+                                <li><strong>No Transactional Data Uploads Detected:</strong> No uploads of transactional data were detected for the analyzed week (Page 57), which could indicate a pause in data loading or an issue with statistics collection.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 1.6 Financial Data Quality -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">1.6 Financial Data Quality</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong class="text-error">Significant FINS_REC Errors (Red Alert):</strong> A total of <strong>115 reconciliation errors</strong> were reported by the `FINS_REC` transaction on October 20, 2025 (Page 38).
+                                    <ul class="list-circle list-inside ml-4">
+                                        <li>These errors are heavily concentrated in <strong>Company Code KH00 (107 errors)</strong>.</li>
+                                        <li>Message Number 577 accounts for 74 errors, and Message Number 578 for 32 errors.</li>
+                                        <li>The inconsistencies span multiple fiscal years, with <strong>79 errors originating in 2020</strong>, indicating long-standing data issues. These errors can significantly impact financial reporting and consistency.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 1.7 Hardware Capacity -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">1.7 Hardware Capacity</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Sufficient CPU for Current Average Workload:</strong> The CPU utilization on both application servers (saazs-v-sap30, saazs-v-sap37) is low (4% and 3% respectively), and the maximum CPU utilization on the DB server is 27% (Page 16, 70). This indicates sufficient CPU resources for the <em>average</em> workload.</li>
+                                <li><strong>No Memory Bottlenecks on OS Level:</strong> No memory bottlenecks were detected on the OS level for the SAP HANA server, with physical memory usage well below limits (Graphical Data: Page 70). However, this contrasts with the severe <em>HANA database internal</em> memory bottlenecks.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enhanced Graphical Analysis Descriptions -->
+            <section class="space-y-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-primary-dark">2. Enhanced Graphical Analysis Descriptions</h2>
+                <p class="text-neutral-dark leading-relaxed">
+                    This section provides detailed descriptions and interpretations of the graphical data and trends identified during the EWA report analysis.
+                </p>
+
+                <!-- Accordion for Graphical Analysis Descriptions -->
+                <div class="accordion-container space-y-2">
+                    <!-- 2.1 SAP HANA Database Memory Utilization -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.1 SAP HANA Database Memory Utilization (Pages 71, 72, 73)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Memory Usage of SAP HANA Instance (Page 71):</strong> This chart visually depicts the "Used SAP HANA Instance Memory" relative to the "Global Allocation Limit" over time. The graph clearly shows that the used memory consistently approaches and frequently exceeds the allocated limit (around 480 GB). This persistent high utilization, often at or above 90%, is a critical indicator that the SAP HANA database instance is operating under severe memory pressure, leading to resource contention for normal operations and potential instability.</li>
+                                <li><strong>Memory Allocation of Tables (Page 72):</strong> This graphic illustrates the proportion of memory consumed by row and column tables versus the memory available for temporary calculations. The critical finding is that memory used for tables consistently takes up a very large percentage, leaving a disproportionately small "Free to allocation limit" space. This indicates that a significant portion of the allocated memory is consumed by static data storage, severely limiting the dynamic working memory required for complex queries and temporary operations. The visual suggests an imbalance in memory distribution, impacting query performance and overall system responsiveness.</li>
+                                <li><strong>Memory Consumption of Indexserver (Page 73):</strong> This graph tracks the "Indexserver memory used" against its "Effective allocation limit." The visual trend confirms that the indexserver's memory consumption consistently hovers very close to, and at times reaches, its effective limit. As the indexserver is the core processing engine of SAP HANA, this high utilization implies that it is constantly struggling for memory, leading to actions like table unloads and increasing the likelihood of Out-Of-Memory events. This directly correlates with overall HANA database performance degradation.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 2.2 SAP HANA Database Disk Usage -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.2 SAP HANA Database Disk Usage (Pages 65, 66)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Disk Space Usage (Page 65):</strong> The table provides a snapshot of disk occupancy for various volume types. Critically, the "DATA" usage type shows only 19% free disk space, which is dangerously close to the 10% threshold for critical action. Furthermore, the combined "CATALOG_BACKUP+DATA_BACKUP+LOG_BACKUP+TRACE" volume reports 91% usage, signifying an almost full backup storage. These figures indicate an imminent risk of disk-full events, which would suspend database operations and halt backups.</li>
+                                <li><strong>Database Growth (Page 66):</strong> This graph illustrates the long-term trend of "Total Size" (allocated data volumes) versus "Used Size" (actual data consumption) of the HANA database over time. The visual clearly shows a steady, continuous upward trend in the "Used Size" from mid-May to late October 2025. Alarmingly, the "Used Size" is progressively closing the gap with the "Total Size," indicating that current data growth rates are consuming available disk space at an unsustainable pace. This trend predicts that the system will soon hit the allocated disk capacity limits if no proactive measures are taken.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 2.3 SAP HANA Column Unloads -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.3 SAP HANA Column Unloads (Page 75)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <p class="leading-relaxed">This graph displays the number of column unloads in the SAP HANA system over the monitored period. Multiple significant peaks are evident, reaching values between 800,000 and 850,000 on several days (e.g., Oct 20, 21, 23, 24, 26). These recurring large-scale unloads are a direct consequence of the detected memory pressure. When SAP HANA runs low on available memory for active operations, it unloads less frequently accessed column store tables from memory to free up space. While this is a self-preservation mechanism, frequent unloads severely impact query performance as data needs to be reloaded into memory upon subsequent access, increasing response times.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2.4 SAP HANA SQL Response Time Components -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.4 SAP HANA SQL Response Time Components (Page 75)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <p class="leading-relaxed">This graph breaks down the average SAP HANA SQL response time into its constituent components (Preparation time, Open time, Fetch time, Lock wait time, Table load time). A critical insight from the visual is the overwhelming dominance of "Preparation time," which often accounts for over 80% of the total response time. This suggests that a disproportionate amount of time is spent on parsing, optimizing, and generating execution plans for SQL queries rather than on actual data retrieval (Fetch time) or opening cursors (Open time). This could indicate complex query structures, inefficient SQL, or issues with the SQL plan cache, leading to prolonged query execution durations.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2.5 ABAP Workload Distribution by Application Module -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.5 ABAP Workload Distribution by Application Module (Page 21)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <p class="leading-relaxed">This diagram presents the distribution of CPU and DB load across different application modules. A striking observation is that the "Un-Assigned" category accounts for the largest share of both CPU load (66%) and DB load (32%). The "Un-Assigned" category typically includes custom programs, industry solutions, and third-party add-ons not classified in SAP's standard hierarchy. This visual highlights that a significant portion of system resources is consumed by custom or unclassified code, suggesting potential for optimization in these areas and a lack of transparency into their resource usage.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2.6 Dialog Work Processes Waiting on DB -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.6 Dialog Work Processes Waiting on DB (Page 22)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <p class="leading-relaxed">This graph illustrates the average number of dialog work processes waiting for a database response over different timeframes. The visual clearly shows recurring peaks, notably exceeding 2.0 around the 11:00-12:00 mark, which are typical core business hours. These peaks indicate periods where dialog processes are stalled, waiting for the database to complete its operations. Such waiting times directly contribute to higher dialog response times and reduced user experience, suggesting potential database bottlenecks during peak workload.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2.7 System Availability based on Collector Protocols -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.7 System Availability based on Collector Protocols (Page 30)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <p class="leading-relaxed">This chart depicts the system's availability over the monitored week. The most alarming feature is a significant drop in availability to approximately 75% on October 26, 2025 (Sunday), contrasting sharply with the consistent 100% availability observed on preceding days. This visual confirms a recent and substantial outage or period of unavailability, pointing to a severe stability issue that requires immediate investigation.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2.8 BW OLAP Cache Usage -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.8 BW OLAP Cache Usage (Page 56)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <p class="leading-relaxed">This table provides an overview of how BW queries interact with the OLAP cache. The critical data point is that for "All Queries," 100% of query executions "Accessed DB," while 0% "Accessed Cache." This unequivocally demonstrates that the OLAP cache is completely ineffective or improperly configured, forcing every query to retrieve data directly from the underlying database. This redundancy severely impacts BW query performance, increases database load, and negates the benefits of caching.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2.9 Database Server CPU Max. Load Trend -->
+                    <div class="accordion-item rounded-lg shadow-md">
+                        <div class="accordion-header p-4 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xl font-semibold">2.9 Database Server CPU Max. Load Trend (Page 140)</h4>
+                            <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                        </div>
+                        <div class="accordion-content rounded-b-lg p-4 text-neutral-dark">
+                            <p class="leading-relaxed">This long-term trend chart shows the maximum CPU load on the database server. While the instantaneous average CPU load might appear low, the trend reveals a gradual but consistent increase in maximum CPU utilization over several months, rising from below 5% in early 2024 to sustained peaks of 20-30% by late 2025. This upward trajectory indicates growing demands on the database server's processing power, suggesting that while not a bottleneck *yet*, the system is consuming more CPU over time and might require scaling or optimization in the near future.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actionable and Prioritized Recommendations -->
+            <section class="space-y-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-primary-dark">3. Actionable and Prioritized Recommendations</h2>
+                <p class="text-neutral-dark leading-relaxed">
+                    This section provides a prioritized list of recommendations, including their estimated impact, effort, and relevant SAP Notes or external recommendations.
+                </p>
+
+                <h3 class="text-xl md:text-2xl font-semibold text-error">3.1 Critical Priority (Red Alerts – Immediate Action Required)</h3>
+                <div class="overflow-x-auto rounded-lg shadow-md">
+                    <table class="min-w-full recommendation-table text-sm md:text-base">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 text-left">ID</th>
+                                <th class="px-4 py-2 text-left">Recommendation</th>
+                                <th class="px-4 py-2 text-left">Impact</th>
+                                <th class="px-4 py-2 text-left">Effort</th>
+                                <th class="px-4 py-2 text-left">Details / SAP Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data for Critical Priority Recommendations (from user instructions) -->
+                            <tr>
+                                <td class="px-4 py-2">1</td>
+                                <td class="px-4 py-2">Upgrade SAP S/4HANA and HANA DB to supported releases.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2">Current versions are out of maintenance, posing severe security and support risks. This is the most critical strategic action.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">2</td>
+                                <td class="px-4 py-2">Address SAP HANA memory exhaustion.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2">Review memory allocation limits, optimize table distribution, investigate `Pool/ColumnStore/Main/Dictionary/RoDict` consumption. Consider hardware upgrade if optimization is insufficient.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">3</td>
+                                <td class="px-4 py-2">Free up critical disk space on DATA and Backup volumes.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2">Implement data aging, delete old traces/logs, extend disk volumes, or implement data tiering. Address continuous database growth.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">4</td>
+                                <td class="px-4 py-2">Resolve log backup failures.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2">Investigate root cause of unsuccessful backups (disk space, network, backup tool configuration). Ensure recoverability.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">5</td>
+                                <td class="px-4 py-2">Investigate and stabilize system availability drop.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2">Analyze system logs, dumps, and OS events around October 26, 2025, to identify the cause of the 75% availability.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">6</td>
+                                <td class="px-4 py-2">Address ABAP short dumps.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2">Analyze `TSV_TNEW_PAGE_ALLOC_FAILED`, `TIME_OUT`, `MESSAGE_TYPE_X` dumps. Optimize programs, increase memory parameters if necessary.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">7</td>
+                                <td class="px-4 py-2">Enable SAP HANA auditing and review privileges.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2">Implement comprehensive audit policies. Revoke excessive `DATA ADMIN` and `SAP_ALL` privileges. Implement principle of least privilege.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">8</td>
+                                <td class="px-4 py-2">Utilize ABAP and HANA "System Recommendations" tools.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-green-600 font-semibold">Low</td>
+                                <td class="px-4 py-2">Regularly run and apply security notes and recommendations from these tools to proactively patch vulnerabilities.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">9</td>
+                                <td class="px-4 py-2">Resolve FINS_REC reconciliation errors.</td>
+                                <td class="px-4 py-2 text-error font-semibold">High</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2">Investigate root cause of 115 errors, especially in Company Code KH00 and fiscal year 2020. Implement corrective financial postings and process improvements.</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">10</td>
+                                <td class="px-4 py-2">Improve BW OLAP cache utilization.</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2 text-yellow-600 font-semibold">Medium</td>
+                                <td class="px-4 py-2">Activate caching for relevant queries, increase "Global Cache Size" to recommended levels (e.g., 3.6 GB). Analyze query patterns for optimal caching strategy.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const accordionItem = header.closest('.accordion-item');
+                    const content = accordionItem.querySelector('.accordion-content');
+                    const icon = header.querySelector('.accordion-icon');
+
+                    // Toggle active class on content
+                    content.classList.toggle('active');
+
+                    // Rotate icon
+                    if (content.classList.contains('active')) {
+                        icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+
+                    // Close other open accordions in the same container
+                    const parentContainer = header.closest('.accordion-container');
+                    if (parentContainer) {
+                        parentContainer.querySelectorAll('.accordion-content.active').forEach(otherContent => {
+                            if (otherContent !== content) {
+                                otherContent.classList.remove('active');
+                                otherContent.closest('.accordion-item').querySelector('.accordion-icon').style.transform = 'rotate(0deg)';
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
